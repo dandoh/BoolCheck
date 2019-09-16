@@ -191,7 +191,7 @@ view model =
                         , fontSize "40pt"
                         , fontWeight "700"
                         , marginBottom "80px"
-                        , marginTop "10%"
+                        , marginTop "40px"
                         ]
                         [ text txt ]
 
