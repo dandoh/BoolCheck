@@ -148,15 +148,6 @@ implicationExpr =
 
 
 
---The order of operations is ¬ , ∧, ∨, =>, <=>
---expr -> EquivalenceExpr
---EquivalenceExpr -> ImplicationExpr <=> EquivalenceExpr | ImplicationExpr
---ImplicationExpr -> DisjunctiveExpr => ImplicationExpr | DisjunctiveExpr
---DisjunctiveExpr -> ConjunctiveExpr ∨ DisjunctiveExpr | ConjunctiveExpr
---ConjunctiveExpr -> NegateExpr ∧ ConjunctiveExpr | NegateExpr
---NegateExpr -> ¬ NegateExpr | GroupingExpr
---GroupingExpr -> (expr) | AtomicExpr
---AtomicExpr -> T | F | p | q | r | ...
 
 
 disjunctiveExpr : Parser Expr
