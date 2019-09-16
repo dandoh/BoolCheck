@@ -1,4 +1,4 @@
-module Expr exposing (Expr(..), allCombinations, atomicExpr, conjunctiveExpr, disjunctiveExpr, equivalentExpr, eval, expr, groupingExpr, implicationExpr, isTrue, negateExpr, undefined, vars)
+module Expr exposing (..)
 
 import Debug exposing (todo)
 import Dict as Dict exposing (..)
@@ -21,6 +21,28 @@ type Expr
     | Imply Expr Expr
     | Equivalent Expr Expr
     | Var String
+
+
+type Verdict
+    = AlwaysTrue
+    | NotAlwaysTrue (Dict String Bool)
+
+
+check : Expr -> Verdict
+check exp =
+    let
+        allCombs =
+            allCombinations exp
+
+        sat comb =
+            eval exp comb
+    in
+    case List.filter (sat >> not) allCombs of
+        x :: xs ->
+            NotAlwaysTrue x
+
+        _ ->
+            AlwaysTrue
 
 
 isTrue : Expr -> Bool

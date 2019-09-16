@@ -3,6 +3,7 @@ module Main exposing (main)
 import Browser
 import Browser.Dom as Dom exposing (Error)
 import Browser.Navigation as Nav
+import Dict
 import Expr exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,7 +16,7 @@ import Url
 
 type Res
     = ParseError
-    | Result Bool
+    | CheckResult Verdict
 
 
 type alias Model =
@@ -29,7 +30,7 @@ subscriptions _ =
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( { str = "a", checked = False, result = Result True }, Cmd.none )
+    ( { str = "a", checked = False, result = CheckResult AlwaysTrue }, Cmd.none )
 
 
 type Msg
@@ -37,15 +38,24 @@ type Msg
     | Check
     | LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
-    | Symbol String
-    | FocusResult (Result Error ())
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Change str ->
-            ( { model | str = str, checked = False }, Cmd.none )
+            let
+                replacedStr =
+                    str
+                        |> String.replace "and" "∧"
+                        |> String.replace "or" "∨"
+                        |> String.replace "not" "¬"
+                        |> String.replace "imply" "⇒"
+                        |> String.replace "implies" "⇒"
+                        |> String.replace "eq" "≡"
+                        |> String.replace "==" "≡"
+            in
+            ( { model | str = replacedStr, checked = False }, Cmd.none )
 
         Check ->
             let
@@ -55,12 +65,9 @@ update msg model =
                             ParseError
 
                         Ok expression ->
-                            Result <| isTrue expression
+                            CheckResult <| check expression
             in
             ( { model | checked = True, result = result }, Cmd.none )
-
-        Symbol s ->
-            ( { model | checked = False, str = model.str ++ s }, Dom.focus "input" |> Task.attempt FocusResult )
 
         _ ->
             ( model, Cmd.none )
@@ -69,6 +76,20 @@ update msg model =
 view : Model -> Browser.Document Msg
 view model =
     let
+        signButton options children =
+            button
+                ([ stWidth "40px"
+                 , backgroundColor "#F1F1F8"
+                 , stHeight "40px"
+                 , borderRadius "5px"
+                 , margin "10px"
+                 , fontFamily "monospace"
+                 , fontSize "14pt"
+                 ]
+                    ++ options
+                )
+                children
+
         body =
             [ colDiv [ stHeight "100vh", alignCenter, paddingLeft "60px", paddingRight "60px" ]
                 [ div
@@ -115,62 +136,24 @@ view model =
                         ]
                         [ text "Check" ]
                     ]
-                , rowDiv [ marginTop "20px" ]
-                    [ button
-                        [ stWidth "70px"
-                        , backgroundColor "#F1F1F8"
-                        , stHeight "70px"
-                        , borderRadius "5px"
-                        , margin "10px"
-                        , onClick (Symbol "∨")
-                        , fontFamily "monospace"
-                        , fontSize "30pt"
-                        ]
+                , rowDiv [ marginTop "20px", alignCenter, fontFamily "monospace" ]
+                    [ text "Type the following to input logic operators: " ]
+                , rowDiv [ marginTop "10px", alignCenter, fontFamily "monospace" ]
+                    [ signButton []
                         [ text "∨" ]
-                    , button
-                        [ stWidth "70px"
-                        , backgroundColor "#F1F1F8"
-                        , stHeight "70px"
-                        , borderRadius "5px"
-                        , margin "10px"
-                        , fontFamily "monospace"
-                        , fontSize "30pt"
-                        , onClick (Symbol "∧")
-                        ]
+                    , div [ marginRight "18px" ] [ text "or" ]
+                    , signButton []
                         [ text "∧" ]
-                    , button
-                        [ stWidth "70px"
-                        , backgroundColor "#F1F1F8"
-                        , stHeight "70px"
-                        , borderRadius "5px"
-                        , margin "10px"
-                        , fontFamily "monospace"
-                        , fontSize "30pt"
-                        , onClick (Symbol "¬")
-                        ]
+                    , div [ marginRight "18px" ] [ text "and" ]
+                    , signButton []
                         [ text "¬" ]
-                    , button
-                        [ stWidth "70px"
-                        , backgroundColor "#F1F1F8"
-                        , stHeight "70px"
-                        , borderRadius "5px"
-                        , margin "10px"
-                        , fontFamily "monospace"
-                        , onClick (Symbol "≡")
-                        , fontSize "30pt"
-                        ]
+                    , div [ marginRight "18px" ] [ text "not" ]
+                    , signButton []
                         [ text "≡" ]
-                    , button
-                        [ stWidth "70px"
-                        , backgroundColor "#F1F1F8"
-                        , stHeight "70px"
-                        , borderRadius "5px"
-                        , margin "10px"
-                        , fontFamily "monospace"
-                        , fontSize "30pt"
-                        , onClick (Symbol "⇒")
-                        ]
+                    , div [ marginRight "18px" ] [ text "eq/==" ]
+                    , signButton []
                         [ text "⇒" ]
+                    , div [ marginRight "18px" ] [ text "implies/imply" ]
                     ]
                 , if model.checked then
                     let
@@ -179,11 +162,27 @@ view model =
                                 ParseError ->
                                     ( "Parse error!", "blue" )
 
-                                Result True ->
+                                CheckResult AlwaysTrue ->
                                     ( "Always true", "green" )
 
-                                Result False ->
-                                    ( "Not always true", "red" )
+                                CheckResult (NotAlwaysTrue valMap) ->
+                                    let
+                                        toStr (k, v) =
+                                            k
+                                                ++ " = "
+                                                ++ (if v then
+                                                        "True"
+
+                                                    else
+                                                        "False"
+                                                   )
+
+                                        contradiction =
+                                            Dict.toList valMap
+                                                |> List.map toStr
+                                                |> String.join ", "
+                                    in
+                                    ( "Not always true with " ++ contradiction, "red" )
                     in
                     div
                         [ fontFamily "monospace"
