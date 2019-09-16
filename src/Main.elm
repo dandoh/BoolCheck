@@ -180,10 +180,10 @@ view model =
                                     ( "Parse error!", "blue" )
 
                                 Result True ->
-                                    ( "True", "green" )
+                                    ( "Always true", "green" )
 
                                 Result False ->
-                                    ( "False", "red" )
+                                    ( "Not always true", "red" )
                     in
                     div
                         [ fontFamily "monospace"
