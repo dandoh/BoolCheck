@@ -1,4 +1,4 @@
-module Expr exposing (..)
+module Expr exposing (Expr(..), allCombinations, atomicExpr, conjunctiveExpr, disjunctiveExpr, equivalentExpr, eval, expr, groupingExpr, implicationExpr, isTrue, negateExpr, undefined, vars)
 
 import Debug exposing (todo)
 import Dict as Dict exposing (..)
@@ -145,9 +145,6 @@ implicationExpr =
                 |= lazy (\_ -> implicationExpr)
         , disjunctiveExpr
         ]
-
-
-
 
 
 disjunctiveExpr : Parser Expr
