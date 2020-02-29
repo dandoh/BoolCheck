@@ -1,5 +1,5 @@
 # BoolCheck
-Check whether a boolean expression is true
-![GitHub Logo](screenshot.png)
+Check if a formula is valid or falsifiable
 
-# TODO
+![screenshot](screenshot.png)
+

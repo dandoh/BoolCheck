@@ -24,8 +24,8 @@ type Expr
 
 
 type Verdict
-    = AlwaysTrue
-    | NotAlwaysTrue (Dict String Bool)
+    = Valid
+    | Falsifiable (Dict String Bool)
 
 
 check : Expr -> Verdict
@@ -39,10 +39,10 @@ check exp =
     in
     case List.filter (sat >> not) allCombs of
         x :: xs ->
-            NotAlwaysTrue x
+            Falsifiable x
 
         _ ->
-            AlwaysTrue
+            Valid
 
 
 isTrue : Expr -> Bool

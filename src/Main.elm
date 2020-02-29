@@ -30,7 +30,7 @@ subscriptions _ =
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( { str = "a", checked = False, result = CheckResult AlwaysTrue }, Cmd.none )
+    ( { str = "a", checked = False, result = CheckResult Valid }, Cmd.none )
 
 
 type Msg
@@ -162,10 +162,10 @@ view model =
                                 ParseError ->
                                     ( "Parse error!", "blue" )
 
-                                CheckResult AlwaysTrue ->
-                                    ( "Always true", "green" )
+                                CheckResult Valid ->
+                                    ( "Valid !", "green" )
 
-                                CheckResult (NotAlwaysTrue valMap) ->
+                                CheckResult (Falsifiable valMap) ->
                                     let
                                         toStr (k, v) =
                                             k
@@ -182,7 +182,7 @@ view model =
                                                 |> List.map toStr
                                                 |> String.join ", "
                                     in
-                                    ( "Not always true with " ++ contradiction, "red" )
+                                    ( "Falsifiable with " ++ contradiction, "red" )
                     in
                     div
                         [ fontFamily "monospace"
